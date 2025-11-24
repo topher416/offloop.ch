@@ -3,6 +3,14 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(request) {
   try {
+    // Check if Supabase is configured
+    if (!supabase) {
+      return NextResponse.json({
+        success: false,
+        error: 'Supabase not configured',
+        message: 'Missing environment variables: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      }, { status: 500 })
+    }
     // Test 1: Check connection by counting companies
     const { count, error: countError } = await supabase
       .from('companies')
