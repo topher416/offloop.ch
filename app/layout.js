@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Chicago Storefront Theatre Tracker',
+  title: 'offloop.ch - Chicago Storefront Theatre Tracker',
   description: 'The most complete tracker of Chicago storefront and DIY theatre',
 }
 
