@@ -13,19 +13,20 @@ const MOCK_SHOWS = [
   { id: 7, title: "The Doll's House", company: "Nora Collective", neighborhood: "Pilsen", tag: "New Work", showColorClass: "show-color-green", img: "https://placehold.co/400x300/065f46/ffffff?text=DOLLS+HOUSE", synopsis: "A feminist response to Ibsen's masterpiece." },
 ];
 
-// Show Card Component
+// Show Card Component - Optimized for mobile
 function ShowCard({ show, size = 'normal' }) {
   const isFeatured = size === 'featured';
   const isHorizontal = size === 'horizontal';
 
-  let cardClasses = 'show-card relative rounded-xl overflow-hidden p-3 md:p-4 grid gap-3 cursor-pointer';
-  let imageClasses = 'aspect-[4/3] w-full object-cover rounded-lg border-2 border-stone-900';
-  let titleSize = isFeatured ? 'text-2xl md:text-3xl' : 'text-xl';
+  // Mobile-first card styling
+  let cardClasses = 'show-card relative rounded-lg overflow-hidden p-2 sm:p-3 grid gap-2 cursor-pointer';
+  let imageClasses = 'aspect-[4/3] w-full object-cover rounded border-2 border-stone-900';
+  let titleSize = isFeatured ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg';
 
   if (isHorizontal) {
-    cardClasses = 'show-card relative rounded-xl overflow-hidden p-3 min-w-[280px] w-[280px] snap-start border-2 border-stone-900 transition-shadow';
-    imageClasses = 'aspect-[16/9] w-full object-cover rounded-lg border-2 border-stone-900';
-    titleSize = 'text-lg';
+    cardClasses = 'show-card relative rounded-lg overflow-hidden p-2 min-w-[240px] w-[240px] sm:min-w-[280px] sm:w-[280px] snap-start border-2 border-stone-900';
+    imageClasses = 'aspect-[16/9] w-full object-cover rounded border-2 border-stone-900';
+    titleSize = 'text-sm sm:text-base';
   }
 
   return (
@@ -38,7 +39,7 @@ function ShowCard({ show, size = 'normal' }) {
           className={imageClasses}
         />
         {/* Text Overlay Block */}
-        <div className="absolute bottom-0 left-0 right-0 p-2 bg-stone-900/90 text-white">
+        <div className="absolute bottom-0 left-0 right-0 p-1.5 sm:p-2 bg-stone-900/90 text-white">
           <h3 className={`font-bold ${titleSize} leading-tight`}>
             {show.title.toUpperCase()}
           </h3>
@@ -47,19 +48,19 @@ function ShowCard({ show, size = 'normal' }) {
 
       {/* Metadata */}
       <div className="space-y-1">
-        <p className="text-sm uppercase text-stone-700 tracking-wider">
+        <p className="text-xs sm:text-sm uppercase text-stone-700 tracking-wider line-clamp-1">
           {show.company}
         </p>
-        <div className="flex flex-wrap items-center justify-between">
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-600 text-white uppercase tracking-wider">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-600 text-white uppercase tracking-wider whitespace-nowrap">
             {show.neighborhood}
           </span>
           <a
             href="#"
-            className="flex items-center text-indigo-600 font-bold text-sm hover:underline"
+            className="flex items-center text-indigo-600 font-bold text-xs sm:text-sm hover:underline whitespace-nowrap"
             aria-label={`Get tickets for ${show.title}`}
           >
-            Tickets <span className="ml-1 text-base">→</span>
+            Tickets <span className="ml-1 text-sm">→</span>
           </a>
         </div>
       </div>
@@ -67,7 +68,7 @@ function ShowCard({ show, size = 'normal' }) {
   );
 }
 
-// Main Page Component
+// Main Page Component - Mobile-first rebuild
 export default function Home() {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -103,8 +104,7 @@ export default function Home() {
   const snapshotLimit = isMobile ? 3 : 5;
 
   return (
-    <div className="font-body text-stone-900 antialiased max-w-7xl mx-auto p-4 md:p-8">
-
+    <div className="font-body text-stone-900 antialiased min-h-screen">
       {/* Toast Notification */}
       <div
         className={`toast ${showToast ? 'show' : ''}`}
@@ -114,66 +114,67 @@ export default function Home() {
         {toastMessage}
       </div>
 
-      {/* MAIN GRID CONTAINER */}
-      <main className="grid gap-12 md:gap-16">
+      {/* MAIN CONTAINER - Mobile optimized padding */}
+      <main className="max-w-7xl mx-auto px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 space-y-8 sm:space-y-10 md:space-y-12">
 
-        {/* 1. LANDING PAGE: ABOVE THE FOLD */}
-        <section className="grid md:grid-cols-2 gap-8 md:gap-12 py-6 md:py-8 border-b-4 border-stone-900">
-          {/* Left: Bold Text Block */}
-          <div className="space-y-4 md:space-y-6">
-            <h1 className="font-display text-4xl sm:text-6xl lg:text-8xl leading-none text-stone-900 tracking-tighter">
+        {/* 1. HERO SECTION - Mobile first */}
+        <section className="space-y-6 sm:space-y-8 pb-6 sm:pb-8 border-b-2 sm:border-b-4 border-stone-900">
+
+          {/* Title + Tagline (Full width on mobile) */}
+          <div className="space-y-3 sm:space-y-4">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[0.9] text-stone-900 tracking-tight">
               WHAT'S ON TONIGHT IN <span className="text-indigo-600">CHICAGO STOREFRONT THEATRE?</span>
             </h1>
-            <p className="text-lg md:text-xl max-w-xl">
+            <p className="text-base sm:text-lg md:text-xl text-stone-700 max-w-2xl">
               A living calendar of DIY, fringe, and storefront shows across the city.
             </p>
-
-            {/* Compact Filter Row */}
-            <div className="flex flex-wrap gap-2 pt-2 md:pt-4">
-              <div className="flex rounded-full bg-stone-200 p-1 space-x-1 border-2 border-stone-900">
-                {/* Date Segmented Control */}
-                {['Today', 'This Weekend', 'Calendar'].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setActiveTimeFilter(filter)}
-                    className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${
-                      activeTimeFilter === filter
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'text-stone-800 hover:bg-stone-300'
-                    }`}
-                    tabIndex={0}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {/* Neighborhood Filter */}
-              <button
-                onClick={() => handleFilterClick('neighborhood')}
-                className="filter-btn bg-stone-200 text-sm font-semibold px-4 py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100"
-                tabIndex={0}
-              >
-                Neighborhood <span className="ml-1 text-stone-500">↓</span>
-              </button>
-
-              {/* Tags Filter */}
-              <button
-                onClick={() => handleFilterClick('tags')}
-                className="filter-btn bg-stone-200 text-sm font-semibold px-4 py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100"
-                tabIndex={0}
-              >
-                Tags <span className="ml-1 text-stone-500">↓</span>
-              </button>
-            </div>
           </div>
 
-          {/* Right: Live Snapshot */}
-          <div className="space-y-4">
-            <h2 className="font-display text-3xl text-stone-900 uppercase">
-              This Week in Storefront Theatre
+          {/* Filters - Mobile optimized */}
+          <div className="flex flex-wrap gap-2">
+            {/* Date Segmented Control */}
+            <div className="flex rounded-full bg-stone-200 p-0.5 sm:p-1 border-2 border-stone-900">
+              {['Today', 'This Weekend', 'Calendar'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveTimeFilter(filter)}
+                  className={`px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+                    activeTimeFilter === filter
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-stone-800 hover:bg-stone-300'
+                  }`}
+                  tabIndex={0}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            {/* Neighborhood Filter */}
+            <button
+              onClick={() => handleFilterClick('neighborhood')}
+              className="bg-stone-200 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100 whitespace-nowrap"
+              tabIndex={0}
+            >
+              Neighborhood <span className="ml-0.5 text-stone-500">↓</span>
+            </button>
+
+            {/* Tags Filter */}
+            <button
+              onClick={() => handleFilterClick('tags')}
+              className="bg-stone-200 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100 whitespace-nowrap"
+              tabIndex={0}
+            >
+              Tags <span className="ml-0.5 text-stone-500">↓</span>
+            </button>
+          </div>
+
+          {/* Quick Snapshot - Stacked on mobile */}
+          <div className="space-y-3 sm:space-y-4">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-stone-900 uppercase tracking-tight">
+              This Week
             </h2>
-            <div className="space-y-4">
+            <div className="grid gap-3 sm:gap-4">
               {MOCK_SHOWS.slice(0, snapshotLimit).map(show => (
                 <ShowCard key={show.id} show={show} size="normal" />
               ))}
@@ -181,31 +182,32 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 2. FEATURED THIS WEEK STRIP */}
-        <section className="space-y-6 md:space-y-8">
-          <h2 className="font-display text-4xl md:text-5xl text-stone-900 uppercase tracking-tight border-b-2 border-stone-900 pb-2">
-            Featured This Week
+        {/* 2. FEATURED SHOWS */}
+        <section className="space-y-4 sm:space-y-6">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-stone-900 uppercase tracking-tight border-b-2 border-stone-900 pb-2">
+            Featured
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
             {MOCK_SHOWS.filter(s => s.featured).map(show => (
               <ShowCard key={show.id} show={show} size="featured" />
             ))}
           </div>
         </section>
 
-        {/* 3. MAP + LIST COMBO */}
-        <section className="grid md:grid-cols-2 gap-8 md:gap-12">
-          {/* Left: Simple Map Placeholder */}
-          <div className="map-placeholder">
+        {/* 3. FULL LIST (Hide map on mobile, show it on desktop) */}
+        <section className="space-y-4 sm:space-y-6 md:grid md:grid-cols-2 md:gap-8 lg:gap-12">
+
+          {/* Map - Hidden on mobile, shown on tablet+ */}
+          <div className="hidden md:block map-placeholder h-[400px]">
             Simple Map Placeholder (Venue Pins)
           </div>
 
-          {/* Right: Continuous List of Performances */}
-          <div className="space-y-4">
-            <h2 className="font-display text-3xl md:text-4xl text-stone-900 uppercase tracking-tight">
-              Full Performance List
+          {/* Full List */}
+          <div className="space-y-4 sm:space-y-5">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-stone-900 uppercase tracking-tight">
+              All Shows
             </h2>
-            <div className="space-y-6">
+            <div className="grid gap-3 sm:gap-4">
               {MOCK_SHOWS.map(show => (
                 <ShowCard key={show.id} show={show} size="normal" />
               ))}
@@ -213,15 +215,19 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. CLOSING SOON RAIL */}
-        <section className="space-y-4 pb-12">
-          <h2 className="font-display text-3xl md:text-4xl text-stone-900 uppercase tracking-tight">
+        {/* 4. CLOSING SOON - Horizontal scroll */}
+        <section className="space-y-3 sm:space-y-4 pb-6">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-stone-900 uppercase tracking-tight">
             Closing Soon
           </h2>
-          <div className="flex overflow-x-scroll space-x-4 pb-4 snap-x snap-mandatory">
-            {MOCK_SHOWS.filter(s => s.closing).map(show => (
-              <ShowCard key={show.id} show={show} size="horizontal" />
-            ))}
+
+          {/* Horizontal scroll container with padding for edge cards */}
+          <div className="-mx-3 sm:-mx-4 md:-mx-6">
+            <div className="flex overflow-x-auto space-x-3 sm:space-x-4 px-3 sm:px-4 md:px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+              {MOCK_SHOWS.filter(s => s.closing).map(show => (
+                <ShowCard key={show.id} show={show} size="horizontal" />
+              ))}
+            </div>
           </div>
         </section>
 
