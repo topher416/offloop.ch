@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/topher416/offloop.ch#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.84.0",
     "next": "^16.0.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
