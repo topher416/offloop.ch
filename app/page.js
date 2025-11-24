@@ -164,8 +164,10 @@ export default function Home() {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [activeTimeFilter, setActiveTimeFilter] = useState('Calendar');
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState(null);
-  const [selectedTag, setSelectedTag] = useState(null);
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [showNeighborhoodMenu, setShowNeighborhoodMenu] = useState(false);
+  const [showTagMenu, setShowTagMenu] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   // Check if mobile on mount and resize
@@ -187,6 +189,21 @@ export default function Home() {
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.relative')) {
+        setShowNeighborhoodMenu(false);
+        setShowTagMenu(false);
+      }
+    };
+
+    if (showNeighborhoodMenu || showTagMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showNeighborhoodMenu, showTagMenu]);
 
   // Filter shows based on selected filters
   const getFilteredShows = () => {
@@ -222,14 +239,14 @@ export default function Home() {
     }
     // 'Calendar' shows all
 
-    // Neighborhood filtering
-    if (selectedNeighborhood) {
-      filtered = filtered.filter(show => show.neighborhood === selectedNeighborhood);
+    // Neighborhood filtering (multiple selections)
+    if (selectedNeighborhoods.length > 0) {
+      filtered = filtered.filter(show => selectedNeighborhoods.includes(show.neighborhood));
     }
 
-    // Tag filtering
-    if (selectedTag) {
-      filtered = filtered.filter(show => show.tag === selectedTag);
+    // Tag filtering (multiple selections)
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(show => selectedTags.includes(show.tag));
     }
 
     return filtered;
@@ -242,26 +259,36 @@ export default function Home() {
   const filteredShows = getFilteredShows();
   const snapshotLimit = isMobile ? 3 : 5;
 
-  const handleNeighborhoodClick = (neighborhood) => {
-    if (selectedNeighborhood === neighborhood) {
-      setSelectedNeighborhood(null);
-      setToastMessage('Showing all neighborhoods');
-    } else {
-      setSelectedNeighborhood(neighborhood);
-      const count = MOCK_SHOWS.filter(s => s.neighborhood === neighborhood).length;
-      setToastMessage(`Filtered to ${count} shows in ${neighborhood}`);
-    }
+  const toggleNeighborhood = (neighborhood) => {
+    setSelectedNeighborhoods(prev => {
+      if (prev.includes(neighborhood)) {
+        return prev.filter(n => n !== neighborhood);
+      } else {
+        return [...prev, neighborhood];
+      }
+    });
   };
 
-  const handleTagClick = (tag) => {
-    if (selectedTag === tag) {
-      setSelectedTag(null);
-      setToastMessage('Showing all tags');
-    } else {
-      setSelectedTag(tag);
-      const count = MOCK_SHOWS.filter(s => s.tag === tag).length;
-      setToastMessage(`Filtered to ${count} shows tagged '${tag}'`);
-    }
+  const toggleTag = (tag) => {
+    setSelectedTags(prev => {
+      if (prev.includes(tag)) {
+        return prev.filter(t => t !== tag);
+      } else {
+        return [...prev, tag];
+      }
+    });
+  };
+
+  const clearNeighborhoods = () => {
+    setSelectedNeighborhoods([]);
+    setShowNeighborhoodMenu(false);
+    setToastMessage('Showing all neighborhoods');
+  };
+
+  const clearTags = () => {
+    setSelectedTags([]);
+    setShowTagMenu(false);
+    setToastMessage('Showing all tags');
   };
 
   return (
@@ -292,65 +319,115 @@ export default function Home() {
           </div>
 
           {/* Filters - Mobile optimized */}
-          <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
             {/* Date Segmented Control */}
-            <div className="flex flex-wrap gap-2">
-              <div className="flex rounded-full bg-stone-200 p-0.5 sm:p-1 border-2 border-stone-900">
-                {['Today', 'This Weekend', 'Calendar'].map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setActiveTimeFilter(filter)}
-                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
-                      activeTimeFilter === filter
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'text-stone-800 hover:bg-stone-300'
-                    }`}
-                    tabIndex={0}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
+            <div className="flex rounded-full bg-stone-200 p-0.5 sm:p-1 border-2 border-stone-900">
+              {['Today', 'This Weekend', 'Calendar'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveTimeFilter(filter)}
+                  className={`px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
+                    activeTimeFilter === filter
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-stone-800 hover:bg-stone-300'
+                  }`}
+                  tabIndex={0}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
 
-            {/* Neighborhoods - Chip filters */}
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Neighborhoods:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {neighborhoods.map(neighborhood => (
-                  <button
-                    key={neighborhood}
-                    onClick={() => handleNeighborhoodClick(neighborhood)}
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border-2 border-stone-900 transition-colors whitespace-nowrap ${
-                      selectedNeighborhood === neighborhood
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-stone-200 text-stone-800 hover:bg-indigo-100'
-                    }`}
-                  >
-                    {neighborhood}
-                  </button>
-                ))}
-              </div>
+            {/* Neighborhood Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowNeighborhoodMenu(!showNeighborhoodMenu);
+                  setShowTagMenu(false);
+                }}
+                className="bg-stone-200 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100 whitespace-nowrap"
+                tabIndex={0}
+              >
+                Neighborhoods {selectedNeighborhoods.length > 0 && `(${selectedNeighborhoods.length})`}
+                <span className="ml-0.5 text-stone-500">↓</span>
+              </button>
+
+              {showNeighborhoodMenu && (
+                <div className="absolute top-full left-0 mt-1 bg-white border-2 border-stone-900 rounded-lg shadow-lg z-50 min-w-[200px] max-h-[300px] overflow-y-auto">
+                  <div className="p-2 space-y-1">
+                    {neighborhoods.map(neighborhood => (
+                      <label
+                        key={neighborhood}
+                        className="flex items-center gap-2 px-2 py-1.5 hover:bg-stone-100 rounded cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedNeighborhoods.includes(neighborhood)}
+                          onChange={() => toggleNeighborhood(neighborhood)}
+                          className="w-4 h-4 rounded border-2 border-stone-900"
+                        />
+                        <span className="text-sm">{neighborhood}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedNeighborhoods.length > 0 && (
+                    <div className="border-t-2 border-stone-900 p-2">
+                      <button
+                        onClick={clearNeighborhoods}
+                        className="text-xs font-semibold text-indigo-600 hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Tags - Chip filters */}
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-stone-600 uppercase tracking-wider">Tags:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => handleTagClick(tag)}
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border-2 border-stone-900 transition-colors whitespace-nowrap ${
-                      selectedTag === tag
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-stone-200 text-stone-800 hover:bg-indigo-100'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
+            {/* Tags Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowTagMenu(!showTagMenu);
+                  setShowNeighborhoodMenu(false);
+                }}
+                className="bg-stone-200 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-stone-900 transition-colors hover:bg-indigo-100 whitespace-nowrap"
+                tabIndex={0}
+              >
+                Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
+                <span className="ml-0.5 text-stone-500">↓</span>
+              </button>
+
+              {showTagMenu && (
+                <div className="absolute top-full left-0 mt-1 bg-white border-2 border-stone-900 rounded-lg shadow-lg z-50 min-w-[200px] max-h-[300px] overflow-y-auto">
+                  <div className="p-2 space-y-1">
+                    {tags.map(tag => (
+                      <label
+                        key={tag}
+                        className="flex items-center gap-2 px-2 py-1.5 hover:bg-stone-100 rounded cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTags.includes(tag)}
+                          onChange={() => toggleTag(tag)}
+                          className="w-4 h-4 rounded border-2 border-stone-900"
+                        />
+                        <span className="text-sm">{tag}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {selectedTags.length > 0 && (
+                    <div className="border-t-2 border-stone-900 p-2">
+                      <button
+                        onClick={clearTags}
+                        className="text-xs font-semibold text-indigo-600 hover:underline"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
